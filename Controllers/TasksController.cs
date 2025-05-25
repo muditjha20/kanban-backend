@@ -4,7 +4,6 @@ using KanbanBoardAPI.Models.DTOs;
 // using KanbanBoardAPI.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.SignalR;
 
 namespace KanbanBoardAPI.Controllers;
 
@@ -13,12 +12,10 @@ namespace KanbanBoardAPI.Controllers;
 public class TasksController : ControllerBase
 {
     private readonly AppDbContext _context;
-    private readonly IHubContext<TaskHub> _hubContext;
 
-    public TasksController(AppDbContext context, IHubContext<TaskHub> hubContext)
+    public TasksController(AppDbContext context)
     {
         _context = context;
-        _hubContext = hubContext;
     }
 
     [HttpGet]
@@ -52,8 +49,6 @@ public class TasksController : ControllerBase
         await _context.Tasks.AddAsync(task);
         await _context.SaveChangesAsync();
 
-        await _hubContext.Clients.All.SendAsync("TaskCreated", task);
-
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
 
@@ -72,8 +67,6 @@ public class TasksController : ControllerBase
 
         await _context.SaveChangesAsync();
 
-        await _hubContext.Clients.All.SendAsync("TaskUpdated", task);
-
         return NoContent();
     }
 
@@ -85,8 +78,6 @@ public class TasksController : ControllerBase
 
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
-
-        await _hubContext.Clients.All.SendAsync("TaskDeleted", id);
 
         return NoContent();
     }

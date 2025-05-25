@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://kanban-board-xtt1.onrender.com") // ✅ No trailing slash
+        policy.WithOrigins("https://kanban-board-xtt1.onrender.com") 
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -23,8 +23,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddSignalR(); // Register SignalR
 
 var app = builder.Build();
 
@@ -41,7 +39,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<TaskHub>("/taskhub"); // Register hub route
 
 // SEED DATABASE
 using (var scope = app.Services.CreateScope())
