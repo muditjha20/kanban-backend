@@ -15,4 +15,9 @@ public class TaskItem
     public int ColumnId { get; set; }
 
     public Column Column { get; set; } = null!;
+
+    public string UserId { get; set; }
 }
+
+// This code defines a TaskItem model for a Kanban board application.
+// There are extra properties that i will utilize later in further updates.

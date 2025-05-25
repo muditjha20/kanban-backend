@@ -1,7 +1,6 @@
 using KanbanBoardAPI.Data;
 using KanbanBoardAPI.Models;
 using KanbanBoardAPI.Models.DTOs;
-// using KanbanBoardAPI.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,21 +20,34 @@ public class TasksController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllTasks()
     {
-        var tasks = await _context.Tasks.ToListAsync();
+        var userId = HttpContext.Items["UserUID"] as string;
+        if (userId == null) return Unauthorized();
+
+        var tasks = await _context.Tasks
+            .Where(t => t.UserId == userId)
+            .ToListAsync();
+
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTask(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var userId = HttpContext.Items["UserUID"] as string;
+        if (userId == null) return Unauthorized();
+
+        var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (task == null) return NotFound();
+
         return Ok(task);
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateTask([FromBody] TaskCreateDto dto)
     {
+        var userId = HttpContext.Items["UserUID"] as string;
+        if (userId == null) return Unauthorized();
+
         var task = new TaskItem
         {
             Title = dto.Title,
@@ -43,7 +55,8 @@ public class TasksController : ControllerBase
             ColumnId = dto.ColumnId,
             Description = dto.Description,
             Tags = dto.Tags,
-            DueDate = dto.DueDate
+            DueDate = dto.DueDate,
+            UserId = userId
         };
 
         await _context.Tasks.AddAsync(task);
@@ -55,7 +68,10 @@ public class TasksController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTask(int id, [FromBody] TaskUpdateDto dto)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var userId = HttpContext.Items["UserUID"] as string;
+        if (userId == null) return Unauthorized();
+
+        var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (task == null) return NotFound();
 
         task.Title = dto.Title;
@@ -73,7 +89,10 @@ public class TasksController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
+        var userId = HttpContext.Items["UserUID"] as string;
+        if (userId == null) return Unauthorized();
+
+        var task = await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id && t.UserId == userId);
         if (task == null) return NotFound();
 
         _context.Tasks.Remove(task);

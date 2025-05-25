@@ -1,6 +1,9 @@
 using KanbanBoardAPI.Data;
 using KanbanBoardAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +39,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<FirebaseAuthMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
@@ -63,5 +69,11 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"ID: {t.Id}, Title: {t.Title}, ColumnId: {t.ColumnId}");
     }
 }
+
+FirebaseApp.Create(new AppOptions()
+{
+    Credential = GoogleCredential.FromFile("firebase-service-account.json")
+});
+
 
 app.Run();
