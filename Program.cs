@@ -72,7 +72,8 @@ using (var scope = app.Services.CreateScope())
 
 FirebaseApp.Create(new AppOptions()
 {
-    Credential = GoogleCredential.FromFile("firebase-service-account.json")
+    Credential = GoogleCredential.FromJson(Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_JSON"))
+
 });
 
 
