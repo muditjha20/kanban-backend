@@ -6,7 +6,7 @@ The API supports secure CRUD operations for tasks, columns, and users, protected
 
 > 🔗 **Live Backend URL**: [kanban-backend](https://kanban-backend-2vbh.onrender.com)
 > 
-> 💻 **Frontend Repo**: [kanban-frontend](https://github.com/muditjha20/kanban-frontend)
+> 💻 **Frontend Repo**: [kanban-frontend](https://github.com/muditjha20/kanban-board)
 
 ---
 
