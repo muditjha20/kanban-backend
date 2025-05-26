@@ -487,3 +487,5 @@ appsettings.json
 firebase-service-account.json.json
 
 pgcli/
+
+postgresql-15.5-1-windows-x64-binaries.zip
