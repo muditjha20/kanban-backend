@@ -16,7 +16,6 @@ The API supports secure CRUD operations for tasks, columns, and users, protected
 - 🔐 Firebase Authentication (verifies Firebase tokens server-side)
 - 📦 PostgreSQL database via Entity Framework Core
 - 🧱 Models for Task, Column, and User
-- 🌐 CORS enabled for frontend communication
 - 📂 Migration-based schema updates using EF Core
 - ☁️ Hosted on Render with environment-secured configuration
 
@@ -109,7 +108,7 @@ Ensure your working environment has the correct DB set up before applying migrat
 
 **Mudit Mayank Jha**  
 B.Sc. Computer Science @ The University of the West Indies  
-[GitHub](https://github.com/muditjha20) · [LinkedIn](https://linkedin.com/in/muditjha)
+[GitHub](https://github.com/muditjha20) · [LinkedIn](https://www.linkedin.com/in/mudit-mayank-jha-4b27b7203/)
 
 ---
 
