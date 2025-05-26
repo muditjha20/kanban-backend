@@ -485,3 +485,5 @@ $RECYCLE.BIN/
 appsettings.json
 
 firebase-service-account.json.json
+
+pgcli/
