@@ -51,6 +51,10 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
+    // Ensure tables exist by running migrations
+    db.Database.Migrate();
+
+    // Only seed if no columns exist
     if (!db.Columns.Any())
     {
         db.Columns.AddRange(
@@ -69,6 +73,7 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"ID: {t.Id}, Title: {t.Title}, ColumnId: {t.ColumnId}");
     }
 }
+
 
 FirebaseApp.Create(new AppOptions()
 {
