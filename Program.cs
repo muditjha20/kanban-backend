@@ -4,33 +4,37 @@ using Microsoft.EntityFrameworkCore;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-// SERVICES
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS (Only Once)
+// CORS — list every frontend origin 
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("https://kanban-board-xtt1.onrender.com") 
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+        policy
+            .WithOrigins(
+                "https://kanban-board-xtt1.onrender.com", // your existing Render frontend (if you still use it)
+                "https://muditjha20.github.io",           // NEW: GitHub Pages origin
+                "http://localhost:5173",                  // optional: Vite dev
+                "http://127.0.0.1:5500"                   // optional: Live Server
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
+// DB
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
-// MIDDLEWARE
-app.UseCors(); // Enable global CORS
+// ===== Pipeline (ORDER MATTERS) =====
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
@@ -40,13 +44,18 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Public health & root endpoints (unauthenticated)
+app.MapGet("/", () => Results.Text("Kanban API is running", "text/plain"));
+app.MapGet("/health", () => Results.Ok(new { ok = true }));
+
+// Auth middleware MUST run after CORS and before controllers
 app.UseMiddleware<FirebaseAuthMiddleware>();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-// SEED DATABASE
+// ===== SEED DATABASE =====
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -54,7 +63,7 @@ using (var scope = app.Services.CreateScope())
     // Ensure tables exist by running migrations
     db.Database.Migrate();
 
-    // Only seed if no columns exist
+    // seed if no columns exist
     if (!db.Columns.Any())
     {
         db.Columns.AddRange(
@@ -74,12 +83,11 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-
-FirebaseApp.Create(new AppOptions()
+// Firebase Admin init (Render env var must be set)
+FirebaseApp.Create(new AppOptions
 {
-    Credential = GoogleCredential.FromJson(Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_JSON"))
-
+    Credential = GoogleCredential.FromJson(
+        Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_JSON"))
 });
-
 
 app.Run();
