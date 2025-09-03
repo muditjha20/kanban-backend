@@ -1,43 +1,48 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Text.Json;
 using FirebaseAdmin.Auth;
 
 public class FirebaseAuthMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public FirebaseAuthMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
+    public FirebaseAuthMiddleware(RequestDelegate next) => _next = next;
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-
-        if (authHeader != null && authHeader.StartsWith("Bearer "))
+        // Allow CORS preflight through
+        if (HttpMethods.IsOptions(context.Request.Method))
         {
-            var token = authHeader.Substring("Bearer ".Length).Trim();
-
-            try
-            {
-                var decodedToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(token);
-                var uid = decodedToken.Uid;
-
-                // Attach UID to HttpContext for controllers to use
-                context.Items["UserUID"] = uid;
-            }
-            catch
-            {
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Invalid Firebase token.");
-                return;
-            }
+            await _next(context);
+            return;
         }
-        else
+
+        // Only protect API routes
+        var path = context.Request.Path.Value ?? string.Empty;
+        if (!path.StartsWith("/api", StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.StatusCode = 401;
+            await _next(context);
+            return;
+        }
+
+        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+        if (string.IsNullOrWhiteSpace(authHeader) ||
+            !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
             await context.Response.WriteAsync("Missing Firebase token.");
+            return;
+        }
+
+        var token = authHeader.Substring("Bearer ".Length).Trim();
+
+        try
+        {
+            var decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(token);
+            context.Items["UserUID"] = decoded.Uid;
+        }
+        catch
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await context.Response.WriteAsync("Invalid Firebase token.");
             return;
         }
 
